@@ -81,7 +81,6 @@ function log(str, shouldLog){
  */
 function extract(tarballPath, shouldLogToConsole = false){
     if(!fs.existsSync(tarballPath)){
-        log("NON-EXISTANT PATH", shouldLogToConsole);
         throw new Error("Non-existant path");
     }
     const tar_fd = fs.openSync(tarballPath, "r");
@@ -89,18 +88,16 @@ function extract(tarballPath, shouldLogToConsole = false){
     while(true){
         const header = nextHeader(tar_fd);
         if((!checkMagic(header._originalSector))){
-            log("DONE. EXIT(0)", shouldLogToConsole);
             break;
         }
+        log(header._realFileName, shouldLogToConsole);
         
         if(header.typeFlag === "5"){
-            log(`MKDIR ${header._realFileName}\n`, shouldLogToConsole);
             fs.mkdirSync(header._realFileName, {recursive: true});
             continue;
         }
 
         if(header.typeFlag === "\x00" || header.typeFlag === "0"){
-            log(`EXTRACT ${header._realFileName}. READ ${header._sectorsToRead} SECTORS`, shouldLogToConsole);
             let size = header.size;
             let sectors = 0;
             const fd = fs.openSync(header._realFileName, "w");
@@ -108,20 +105,16 @@ function extract(tarballPath, shouldLogToConsole = false){
                 const sector = nextSector(tar_fd);
                 sectors++;
                 if(size < 512){
-                    log(`WRITE LAST SECTOR ${sectors}\n`, shouldLogToConsole);
                     const croppedData = sector.subarray(0, size);
                     fs.writeSync(fd, croppedData);
                     break;
                 }
-                log(`WRITE ${sectors}`, shouldLogToConsole);
                 fs.writeSync(fd, sector);
                 size -= 512;
             }
             fs.closeSync(fd);
             continue;
         }
-
-        console.warn(`UNKOWN FILE TYPE. SKIP`, shouldLogToConsole);
     }
     fs.closeSync(tar_fd);
 }

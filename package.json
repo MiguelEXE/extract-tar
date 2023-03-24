@@ -1,6 +1,12 @@
 {
   "name": "extract-tar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": [
+    "tar",
+    "extract",
+    "archive",
+    "tarball"
+  ]
 }
